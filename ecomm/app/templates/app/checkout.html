@@ -1,89 +1,218 @@
 {% extends "app/base.html" %}
 {% load static %}
-{% block title %}Checkout{% endblock title %}
+{% block title %}Checkout | Secure Dairy Order{% endblock title %}
+
 {% block main-content %}
-<div class="container ">
-    {% if messages %}
-        {% for msg in messages %}
-            <div class="alert alert-danger" role="alert">
-                {{msg}}
-            </div>
-        {% endfor %}
-    {% endif %}
-    <div class="row mt-5 bg-dark text-white rounded-5 rounded-top-0">
-        <div class="col-sm-6 mt-5">
-            <h4>Order Summary</h4>
-            <hr>
-            {% for item in cart_items %}
-                <div class="card mb-2">
-                    <div class="card-body">
-                        <h5>Product: {{item.product.title}}</h5>
-                        <p>Quantity: {{item.quantity}}</p>
-                        <p class="fw-bold">Price: {{item.product.discounted_price}}</p>
-                    </div>
-                </div>
-            {% endfor %}          
-            <p class="fw-bold">Total Cost + Rs. 40 = {{totalamount}}</p>
-            <small>Term and Condition: Lorem ipsum dolor sit amet consectetur adipisicing elit. Mollitia, ullam saepe! Iure optio repellat dolor velit, minus rem. Facilis cumque neque numquam laboriosam, accusantium adipisci nisi nihil in et quis?</small> 
-        </div>
-        <div class="col-sm-4 offset-sm-1 mt-5">
-            <h4>Select Shipping Address</h4>
-            <hr>
-            <form action="{% url 'checkout' %}" method="post" id="myform"> 
+<div class="container my-4">
+
+    <!-- Header -->
+    <div class="mb-4">
+        <h2 class="mb-1">Secure Checkout</h2>
+        <p class="text-muted" style="font-size: 0.9rem;">Complete your order for tomorrow morning's fresh farm delivery</p>
+    </div>
+
+    <div class="row g-4">
+        <!-- Address & Payment Selection -->
+        <div class="col-lg-7">
+            <form action="{% url 'checkout' %}" method="post" id="checkoutForm">
                 {% csrf_token %}
-                {% for ad in add %}
-                    <div class="card">
-                        <div class="card-body">
-                            <h5>{{ ad.name }}</h5>
-                            <p>Mobile: {{ ad.mobile }}</p>
-                            <p>{{ ad.locality }} {{ ad.city }} {{ ad.state }} {{ ad.zipcode }}</p>
+
+                <!-- Step 1: Select Delivery Address -->
+                <div class="bg-white rounded-4 border p-4 shadow-xs mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="fw-bold text-dark mb-0">
+                            <span class="badge bg-success-subtle text-success rounded-circle px-2 py-1 me-2">1</span> Select Delivery Address
+                        </h4>
+                        <a href="{% url 'profile' %}" class="btn btn-sm btn-outline-dairy">
+                            <i class="fa-solid fa-plus me-1"></i> Add New Address
+                        </a>
+                    </div>
+
+                    {% if add %}
+                    <div class="row g-3">
+                        {% for ad in add %}
+                        <div class="col-md-6">
+                            <label class="address-card-modern d-block cursor-pointer w-100" for="custadd{{ ad.id }}">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="custid" id="custadd{{ ad.id }}" value="{{ ad.id }}" {% if forloop.first %}checked{% endif %} required>
+                                    <span class="form-check-label fw-bold text-dark d-block">
+                                        {{ ad.name }}
+                                    </span>
+                                </div>
+                                <div class="ps-4 mt-2 text-muted" style="font-size: 0.85rem; line-height: 1.5;">
+                                    <div>{{ ad.locality }}</div>
+                                    <div>{{ ad.city }}, {{ ad.state }} - {{ ad.zipcode }}</div>
+                                    <div class="mt-1 text-dark fw-semibold">
+                                        <i class="fa-solid fa-phone me-1 text-primary"></i> {{ ad.mobile }}
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <!-- No Address Prompt -->
+                    <div class="p-4 bg-light rounded-4 text-center border">
+                        <i class="fa-solid fa-location-dot fs-2 text-muted mb-2"></i>
+                        <h6 class="fw-bold text-dark">No delivery addresses saved</h6>
+                        <p class="text-muted mb-3" style="font-size: 0.85rem;">Please add your delivery address to continue with your farm order.</p>
+                        <a href="{% url 'profile' %}" class="btn btn-primary-dairy btn-sm">Add Address Now</a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Step 2: Payment Method Choice -->
+                <div class="bg-white rounded-4 border p-4 shadow-xs mb-4">
+                    <h4 class="fw-bold text-dark mb-3">
+                        <span class="badge bg-success-subtle text-success rounded-circle px-2 py-1 me-2">2</span> Payment Method
+                    </h4>
+
+                    <div class="row g-3 mb-3">
+                        <!-- Cash on Delivery / Direct Demo Option -->
+                        <div class="col-md-6">
+                            <label class="address-card-modern d-block cursor-pointer w-100" for="pay_cod">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="payment_method" id="pay_cod" value="cod" checked>
+                                    <span class="form-check-label fw-bold text-dark">
+                                        <i class="fa-solid fa-money-bill-wave text-success me-2"></i> Pay on Delivery / Instant
+                                    </span>
+                                </div>
+                                <small class="ps-4 text-muted d-block mt-1">Pay with cash, UPI, or card upon morning doorstep delivery.</small>
+                            </label>
+                        </div>
+
+                        <!-- Razorpay Online Option -->
+                        <div class="col-md-6">
+                            <label class="address-card-modern d-block cursor-pointer w-100" for="pay_online">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="payment_method" id="pay_online" value="online">
+                                    <span class="form-check-label fw-bold text-dark">
+                                        <i class="fa-solid fa-credit-card text-primary me-2"></i> Online Payment
+                                    </span>
+                                </div>
+                                <small class="ps-4 text-muted d-block mt-1">Instant payment via Razorpay (UPI, Cards, NetBanking).</small>
+                            </label>
                         </div>
                     </div>
-                    <div class="form-check mt-2 mb-5">
-                        <input class="form-check-input" type="radio" name="custid" id="custadd{{ forloop.counter }}" value="{{ ad.id }}"> 
-                        <label class="form-check-label fw-bold" for="custadd{{ forloop.counter }}">
-                            Address: {{ forloop.counter }} 
-                        </label>
+
+                    <!-- Hidden Inputs for Razorpay Order -->
+                    <input type="hidden" name="order_id" id="rzp_order_id" value="{{ order_id }}">
+                    <input type="hidden" name="totamount" value="{{ totalamount }}">
+
+                    <!-- Actions Button -->
+                    <div class="mt-4 pt-3 border-top d-flex justify-content-between align-items-center">
+                        <a href="{% url 'showcart' %}" class="btn btn-outline-dairy">
+                            <i class="fa-solid fa-arrow-left me-1"></i> Back to Cart
+                        </a>
+                        <button type="submit" id="btnPlaceOrder" class="btn-primary-dairy py-3 px-4 fs-6" {% if not add %}disabled{% endif %}>
+                            <i class="fa-solid fa-lock me-1"></i> Place Dairy Order (₹{{ totalamount|floatformat:0 }})
+                        </button>
                     </div>
-                {% endfor %}
-                <div class="form-check mb-3">
-                    <label for="totamount" class="form-label">Total Amount</label>
-                    <input type="number" class="form-control" name="totamount" value="{{ totalamount }}" readonly>
-                </div>
-                <div class="text-end">
-                    <button id="rzp-button1" type="submit" class="btn btn-warning mt-3 px-5 fw-bold">Payment</button>
                 </div>
             </form>
-            <br><br><br>
+        </div>
+
+        <!-- Right Column: Order Items Summary -->
+        <div class="col-lg-5">
+            <div class="bg-white rounded-4 border p-4 shadow-xs sticky-top" style="top: 85px;">
+                <h4 class="fw-bold text-dark mb-3">Order Breakdown</h4>
+
+                <!-- Items Scroll Container -->
+                <div class="mb-3" style="max-height: 280px; overflow-y: auto;">
+                    {% for item in cart_items %}
+                    <div class="d-flex align-items-center gap-3 py-2 border-bottom">
+                        <img src="{{ item.product.product_image.url }}" alt="{{ item.product.title }}" class="rounded-3 border" style="width: 50px; height: 50px; object-fit: contain; background: #fafafa;">
+                        <div class="flex-grow-1">
+                            <h6 class="mb-0 text-dark fw-bold" style="font-size: 0.9rem;">{{ item.product.title }}</h6>
+                            <small class="text-muted">Qty: {{ item.quantity }} &times; ₹{{ item.product.discounted_price|floatformat:0 }}</small>
+                        </div>
+                        <div class="fw-bold text-dark" style="font-size: 0.95rem;">
+                            ₹{{ item.total_cost|floatformat:0 }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Cost Breakdown Table -->
+                <div class="summary-row">
+                    <span class="text-muted">Items Subtotal</span>
+                    <span class="fw-bold text-dark">₹{{ amount|floatformat:2 }}</span>
+                </div>
+                <div class="summary-row">
+                    <span class="text-muted">Morning Delivery</span>
+                    <span class="fw-bold text-dark">
+                        {% if shipping == 0 %}
+                            <span class="text-success">FREE</span>
+                        {% else %}
+                            ₹{{ shipping|floatformat:2 }}
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="summary-row total-row">
+                    <span>Total Amount</span>
+                    <span class="text-success">₹{{ totalamount|floatformat:2 }}</span>
+                </div>
+
+                <!-- Delivery Timing Badge -->
+                <div class="mt-4 p-3 bg-light rounded-3 border">
+                    <div class="d-flex align-items-center gap-2 text-primary fw-bold mb-1" style="font-size: 0.85rem;">
+                        <i class="fa-solid fa-clock"></i> Delivery Commitment
+                    </div>
+                    <small class="text-muted d-block" style="font-size: 0.78rem;">
+                        Farm milked and bottled early morning. Guaranteed doorstep arrival before 7:30 AM in cold thermal bags.
+                    </small>
+                </div>
+            </div>
         </div>
     </div>
-</div><br><br><br>
+
+</div>
 {% endblock main-content %}
 
 {% block payment-gateway %}
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
-    var options = {
-        "key": "REMOVED_RAZOR_KEY_ID",
-        "amount": "{{ razoramount }}", // Amount should be in paise
-        "name": "Dairy Products",
-        "description": "Purchase Product",
-        "order_id": "{{ order_id }}",
-        "handler": function (response){
-            var form = document.getElementById("myform");
-            window.location.href='http://localhost:8000/paymentdone?order_id=${response.razorpay_order_id}&payment_id=${response.razorpay_payment_id}&cust_id=${form.elements["custid"].value}'
-        },
-        "theme": {
-            "color": "#3399cc"
+    // Handle dynamic choice between Razorpay Online & Cash On Delivery
+    document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+        const paymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
+        const selectedAddress = document.querySelector('input[name="custid"]:checked');
+
+        if (!selectedAddress) {
+            alert('Please select a delivery address');
+            e.preventDefault();
+            return;
         }
-    };
-    var rzp1 = new Razorpay(options);
-    rzp1.on('payment.failed', function (response){
-        alert(response.error.description);
+
+        if (paymentMethod === 'online' && "{{ razorpay_enabled }}" === "True") {
+            e.preventDefault();
+            const custId = selectedAddress.value;
+
+            const options = {
+                "key": "{{ razor_key_id }}",
+                "amount": "{{ razoramount }}",
+                "currency": "INR",
+                "name": "MilkMart Dairy Platform",
+                "description": "Farm-Fresh Pure Dairy Order",
+                "order_id": "{{ order_id }}",
+                "handler": function (response) {
+                    const origin = window.location.origin;
+                    window.location.href = `${origin}/paymentdone/?order_id=${response.razorpay_order_id}&payment_id=${response.razorpay_payment_id}&cust_id=${custId}`;
+                },
+                "prefill": {
+                    "name": "{{ request.user.username }}",
+                    "email": "{{ request.user.email }}"
+                },
+                "theme": {
+                    "color": "#059669"
+                }
+            };
+
+            const rzp = new Razorpay(options);
+            rzp.on('payment.failed', function (response) {
+                alert('Payment failed: ' + response.error.description);
+            });
+            rzp.open();
+        }
+        // If COD or Razorpay not active, standard form submit occurs natively to POST /checkout/
     });
-    document.getElementById('rzp-button1').onclick = function(e){
-        rzp1.open();
-        e.preventDefault();
-    }
 </script>
 {% endblock payment-gateway %}

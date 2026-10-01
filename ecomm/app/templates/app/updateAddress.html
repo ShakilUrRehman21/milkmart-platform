@@ -1,30 +1,52 @@
 {% extends "app/base.html" %}
 {% load static %}
-{% block title %}Update Address{% endblock title %}
+{% block title %}Update Address | MilkMart Dairy{% endblock title %}
+
 {% block main-content %}
-<div class="container my-5 text-white bg-dark rounded-5 rounded-top-0">
-    <div class="row" >
-        <h3 style="margin-top: 20px; margin-bottom: 20px; ">Welcome <span class="text-capitalize">{{request.user}}</h3>
+<div class="container my-4">
+
+    <!-- Header -->
+    <div class="mb-4">
+        <h2 class="mb-1">Update Delivery Address</h2>
+        <p class="text-muted" style="font-size: 0.9rem;">Modify your saved address details for accurate morning drop-off</p>
     </div>
-    <div class="col-sm-8 offset-sm-1">
-        <form action="" method="post"> 
-            {% csrf_token %}
-            {% for fm in form %}
-                {{fm.label_tag}} {{fm}} <small class="text-danger">{{fm.errors|striptags}}
-                    </small> <br>
-            {% endfor %}
-            <div class="col-12 mt-3">
-                <button type="submit" class="btn btn-primary">Update</button>
-                <a href="{% url 'address' %}" type='button' class='btn btn-danger'>Back</a> 
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="bg-white rounded-4 border p-4 shadow-xs">
+                <form action="" method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="row g-3">
+                        {% for fm in form %}
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-dark" style="font-size: 0.88rem;">{{ fm.label }}</label>
+                            {{ fm }}
+                            {% if fm.errors %}
+                            <small class="text-danger d-block mt-1">{{ fm.errors|striptags }}</small>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    {% if form.non_field_errors %}
+                        {% for error in form.non_field_errors %}
+                            <div class="alert alert-danger my-3">{{ error }}</div> 
+                        {% endfor %}
+                    {% endif %}
+
+                    <div class="mt-4 pt-3 border-top d-flex justify-content-between align-items-center">
+                        <a href="{% url 'address' %}" class="btn btn-outline-dairy">
+                            <i class="fa-solid fa-arrow-left me-1"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn-primary-dairy px-4 py-2">
+                            <i class="fa-solid fa-check me-1"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
             </div>
-            {% if form.non_field_errors %}
-                {% for error in form.non_field_errors %}
-                    <p class="alert alert-danger my-3">{{error}}</p>
-                {% endfor %}
-            {% endif %}
-        </form>
+        </div>
     </div>
-    <br><br>
+
 </div>
-<br><br><br>
 {% endblock main-content %}

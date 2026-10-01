@@ -1,60 +1,161 @@
 {% extends "app/base.html" %}
 {% load static %}
-{% block title %}Orders{% endblock title %}
+{% block title %}My Orders | MilkMart Dairy{% endblock title %}
+
 {% block main-content %}
-<div class="container my-5 text-white bg-dark rounded-5 rounded-top-0">
-    <div class="row">
-    <h3 class="mt-3">Welcome <span class="text-capitalize">{{request.user}}</span></h3>
-        <div class="col-sm-2 border-end">
-            <ul class="list-unstyled">
-                <li class="d-grid"><a href="{% url 'orders' %}" class="btn btn-primary">Orders</a></li> 
-            </ul>
+<div class="container my-4">
+
+    <!-- Header -->
+    <div class="mb-4">
+        <h2 class="mb-1">Customer Dashboard</h2>
+        <p class="text-muted" style="font-size: 0.9rem;">Track your morning dairy dispatches and purchase history</p>
+    </div>
+
+    <div class="row g-4">
+        <!-- Account Navigation Sidebar -->
+        <div class="col-lg-3">
+            <div class="account-nav-tabs">
+                <div class="p-3 border-bottom mb-2 text-center">
+                    <div class="avatar-initial mx-auto mb-2" style="width: 50px; height: 50px; font-size: 1.4rem;">
+                        {{ request.user.username|slice:":1"|upper }}
+                    </div>
+                    <h5 class="fw-bold mb-0 text-dark">{{ request.user.username }}</h5>
+                    <small class="text-muted">{{ request.user.email|default:"Active MilkMart Customer" }}</small>
+                </div>
+                <nav class="nav flex-column">
+                    <a href="{% url 'profile' %}" class="account-nav-link">
+                        <i class="fa-solid fa-user"></i> My Profile
+                    </a>
+                    <a href="{% url 'address' %}" class="account-nav-link">
+                        <i class="fa-solid fa-location-dot"></i> Saved Addresses
+                    </a>
+                    <a href="{% url 'orders' %}" class="account-nav-link active">
+                        <i class="fa-solid fa-receipt"></i> Order History
+                    </a>
+                    <a href="{% url 'wishlist' %}" class="account-nav-link">
+                        <i class="fa-solid fa-heart"></i> My Wishlist
+                    </a>
+                    <a href="{% url 'passwordchange' %}" class="account-nav-link">
+                        <i class="fa-solid fa-key"></i> Change Password
+                    </a>
+                </nav>
+            </div>
         </div>
 
-    <div class="col-sm-9 offset-sm-1">
-        {% for op in order_placed %}
-            <div class="row">
-                <div class="col-sm-2">
-                    <img src="{{op.product.product_image.url}}" class="img-fluid" height="100" width="100"/> 
+        <!-- Orders Content -->
+        <div class="col-lg-9">
+            {% if order_placed %}
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="fw-bold text-dark mb-0">Past Orders ({{ order_placed.count }})</h4>
+                <span class="badge bg-light text-dark border rounded-pill px-3 py-2">
+                    <i class="fa-solid fa-truck-fast text-success me-1"></i> Morning Dispatch Guaranteed
+                </span>
+            </div>
+
+            {% for op in order_placed %}
+            <div class="order-card-modern">
+                <!-- Order Header -->
+                <div class="order-header-bar">
+                    <div>
+                        <span class="text-muted" style="font-size: 0.8rem;">Ordered On:</span>
+                        <div class="fw-bold text-dark" style="font-size: 0.95rem;">
+                            {{ op.ordered_date|date:"d M Y, h:i A" }}
+                        </div>
+                    </div>
+                    <div>
+                        <span class="text-muted" style="font-size: 0.8rem;">Deliver To:</span>
+                        <div class="fw-semibold text-dark" style="font-size: 0.88rem;">
+                            {{ op.customer.name }} ({{ op.customer.city }})
+                        </div>
+                    </div>
+                    <div>
+                        <span class="text-muted" style="font-size: 0.8rem;">Total Cost:</span>
+                        <div class="fw-bold text-success" style="font-size: 1.1rem; font-family: 'Outfit', sans-serif;">
+                            ₹{{ op.total_cost|floatformat:0 }}
+                        </div>
+                    </div>
+                    <div>
+                        {% if op.status == 'Accepted' %}
+                            <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-3 py-2">Order Confirmed</span>
+                        {% elif op.status == 'Packed' %}
+                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-2">Packed & Chilled</span>
+                        {% elif op.status == 'On The Way' %}
+                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-3 py-2">Out for Morning Delivery</span>
+                        {% elif op.status == 'Delivered' %}
+                            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-2">Delivered to Door</span>
+                        {% else %}
+                            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-3 py-2">{{ op.status }}</span>
+                        {% endif %}
+                    </div>
                 </div>
-                <div class="col-sm-7">
-                    <p>Product : {{op.product.title}}</p>
-                    <p>Quantity: {{op.quantity}}</p>
-                    <p>Price: {{op.total_cost}}
+
+                <!-- Product Details Row -->
+                <div class="row align-items-center g-3">
+                    <div class="col-sm-2 text-center">
+                        <img src="{{ op.product.product_image.url }}" alt="{{ op.product.title }}" class="rounded-3 border p-1" style="width: 75px; height: 75px; object-fit: contain; background: #fafafa;">
+                    </div>
+                    <div class="col-sm-6">
+                        <span class="badge-dairy mb-1 d-inline-block">{{ op.product.get_category_display }}</span>
+                        <h5 class="fw-bold mb-1 text-dark">{{ op.product.title }}</h5>
+                        <p class="text-muted mb-0" style="font-size: 0.85rem;">
+                            Quantity: <span class="fw-semibold text-dark">{{ op.quantity }}</span> &bull; 
+                            Unit Price: <span class="fw-semibold text-dark">₹{{ op.product.discounted_price|floatformat:0 }}</span>
+                        </p>
+                    </div>
+                    <div class="col-sm-4 text-sm-end">
+                        <a href="{% url 'product-detail' op.product.id %}" class="btn btn-sm btn-outline-dairy">
+                            <i class="fa-solid fa-rotate-right me-1"></i> Order Again
+                        </a>
+                    </div>
                 </div>
-                <div class="col-sm-3">
-                    <p> Order Status: {{op.status}} </p>
-                    {% if op.status == 'Accepted' %}
-                        <div class="progress">
-                            <div class="progress-bar" role="progressbar" style="width: 20%" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"></div>
-                    </div>                
-                    {% endif %}
-                    {% if op.status == 'Packed' %}
-                    <div class="progress">
-                        <div class="progress-bar bg-info" role="progressbar" style="width: 40% "aria-valuenow="40" aria-valuemin="0" aria-valuenax-"100"></div>
+
+                <!-- Status Stepper Visual Tracker -->
+                <div class="mt-4 pt-3 border-top">
+                    <div class="d-flex justify-content-between mb-1" style="font-size: 0.78rem;">
+                        <span class="fw-semibold {% if op.status == 'Accepted' or op.status == 'Packed' or op.status == 'On The Way' or op.status == 'Delivered' %}text-success{% else %}text-muted{% endif %}">
+                            <i class="fa-solid fa-circle-check me-1"></i> Accepted
+                        </span>
+                        <span class="fw-semibold {% if op.status == 'Packed' or op.status == 'On The Way' or op.status == 'Delivered' %}text-success{% else %}text-muted{% endif %}">
+                            <i class="fa-solid fa-box me-1"></i> Packed at 4°C
+                        </span>
+                        <span class="fw-semibold {% if op.status == 'On The Way' or op.status == 'Delivered' %}text-success{% else %}text-muted{% endif %}">
+                            <i class="fa-solid fa-van-shuttle me-1"></i> Out on Route
+                        </span>
+                        <span class="fw-semibold {% if op.status == 'Delivered' %}text-success{% else %}text-muted{% endif %}">
+                            <i class="fa-solid fa-door-open me-1"></i> Delivered
+                        </span>
                     </div>
-                    {% endif %}
-                    {% if op.status == 'On The Way' %}
-                    <div class="progress">
-                        <div class="progress-bar bg-warning" role="progressbar" style="width: 70%" aria-valuenow-"70" aria-valuemin="0" aria-valuenax-"100"></div>
+
+                    <div class="progress" style="height: 7px;">
+                        {% if op.status == 'Accepted' %}
+                            <div class="progress-bar bg-info" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                        {% elif op.status == 'Packed' %}
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: 50%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
+                        {% elif op.status == 'On The Way' %}
+                            <div class="progress-bar bg-warning" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
+                        {% elif op.status == 'Delivered' %}
+                            <div class="progress-bar bg-success" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+                        {% elif op.status == 'Cancel' %}
+                            <div class="progress-bar bg-danger" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+                        {% else %}
+                            <div class="progress-bar bg-secondary" role="progressbar" style="width: 15%" aria-valuenow="15" aria-valuemin="0" aria-valuemax="100"></div>
+                        {% endif %}
                     </div>
-                    {% endif %}
-                    {% if op.status == 'Delivered' %}
-                    <div class="progress">
-                        <div class="progress-bar bg-success" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-                    </div>
-                    {% endif %}
-                    {% if op.status == 'Cancel' %}
-                    <div class="progress">
-                        <div class="progress-bar bg-danger" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax-"100"></div>
-                    </div>
-                    {% endif %}
                 </div>
             </div>
-        {% endfor %}
+            {% endfor %}
+
+            {% else %}
+            <!-- No Orders State -->
+            <div class="bg-white rounded-4 border p-5 text-center shadow-xs">
+                <i class="fa-solid fa-receipt fs-1 text-muted mb-3"></i>
+                <h4 class="fw-bold text-dark">No Orders Placed Yet</h4>
+                <p class="text-muted mb-4">You haven't ordered any fresh milk or dairy products yet.</p>
+                <a href="{% url 'home' %}" class="btn-primary-dairy">Browse Farm Dairy</a>
+            </div>
+            {% endif %}
+        </div>
     </div>
-</div>
-</div>
 
-
+</div>
 {% endblock main-content %}

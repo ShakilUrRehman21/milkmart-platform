@@ -35,7 +35,13 @@ class Product (models.Model):
     prodapp = models.TextField(default='')
     category = models.CharField(choices=CATEGORY_CHOICES, max_length=2) 
     product_image = models.ImageField(upload_to='product')
-    def ___str_(self):
+    @property
+    def discount_percentage(self):
+        if self.selling_price > self.discounted_price and self.selling_price > 0:
+            return int(round(((self.selling_price - self.discounted_price) / self.selling_price) * 100))
+        return 0
+
+    def __str__(self):
         return self.title
     
 class Customer(models.Model):
@@ -46,8 +52,8 @@ class Customer(models.Model):
     mobile = models.IntegerField(default=0)
     zipcode = models.IntegerField()
     state = models.CharField(choices=STATE_CHOICES, max_length=100)
-    def _str_(self):
-        return self.name
+    def __str__(self):
+        return f"{self.name} ({self.city})"
     
 
 class Cart(models.Model):

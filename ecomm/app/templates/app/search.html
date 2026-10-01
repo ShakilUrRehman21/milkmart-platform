@@ -1,27 +1,107 @@
-{% extends 'app/base.html' %}
+{% extends "app/base.html" %}
 {% load static %}
-{% block title %}Search Result{% endblock title %}
+{% block title %}Search Results for "{{ query }}" | MilkMart Dairy{% endblock title %}
+
 {% block main-content %}
-<div class="container my-5 bg-dark text-white">
-    <div class="row justify-content-center">
-        <div class="col-lg-10">
-            <div class="row justify-content-center">
-                {% for prod in product %}
-                    <div class="col-lg-4 col-md-6 text-center mb-4 hover-shadow mt-5" >
-                        <a href="{% url 'product-detail' prod.id %}" class="btn">
-                            <div>
-                                <img src="{{prod.product_image.url}}" class="img-fluid rounded-4" width="300px" height="200px" />
-                                <div class="fw-bold text-white mt-2">{{prod.title}}</div>
-                                <div class="fw-bold text-danger">
-                                    Rs.{{prod.discounted_price}}/-
-                                    <small class="fw-light text-decoration-line-through">{{prod.selling_price}}</small>
-                                </div>
-                            </div>
-                        </a>
+<div class="container my-4">
+
+    <!-- Header -->
+    <div class="mb-4 pb-3 border-bottom d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+        <div>
+            <h2 class="mb-1">
+                {% if query %}
+                    Search Results for <span class="text-success">"{{ query }}"</span>
+                {% else %}
+                    Search Dairy Catalog
+                {% endif %}
+            </h2>
+            <p class="text-muted mb-0" style="font-size: 0.9rem;">
+                Found {{ result_count }} farm-fresh product{{ result_count|pluralize }} matching your query
+            </p>
+        </div>
+
+        <!-- In-Page Search Bar -->
+        <form action="{% url 'search' %}" method="get" class="d-flex gap-2" style="max-width: 380px;">
+            <input type="search" name="search" class="form-control rounded-pill" placeholder="Search another item..." value="{{ query }}">
+            <button type="submit" class="btn btn-primary-dairy px-3">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+        </form>
+    </div>
+
+    {% if product %}
+    <div class="row g-4">
+        {% for prod in product %}
+        <div class="col-6 col-md-4 col-lg-3">
+            <div class="product-card-modern">
+                <!-- Wishlist Toggle -->
+                <button class="wishlist-btn-pill plus-wishlist" pid="{{ prod.id }}" title="Save to Wishlist">
+                    <i class="fa-regular fa-heart"></i>
+                </button>
+
+                <!-- Product Thumbnail -->
+                <div class="product-img-box">
+                    <a href="{% url 'product-detail' prod.id %}">
+                        <img src="{{ prod.product_image.url }}" alt="{{ prod.title }}">
+                    </a>
+                </div>
+
+                <!-- Info -->
+                <div class="product-info-box">
+                    <div class="product-meta-row">
+                        <span class="badge-dairy">{{ prod.get_category_display }}</span>
+                        {% if prod.discount_percentage > 0 %}
+                        <span class="badge-discount">{{ prod.discount_percentage }}% OFF</span>
+                        {% endif %}
                     </div>
-                {% endfor %}
+
+                    <a href="{% url 'product-detail' prod.id %}" class="product-title-link">
+                        {{ prod.title }}
+                    </a>
+
+                    <div class="product-rating">
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star-half-stroke"></i>
+                        <span>(4.8)</span>
+                    </div>
+
+                    <div class="product-price-box">
+                        <span class="price-current">₹{{ prod.discounted_price|floatformat:0 }}</span>
+                        {% if prod.selling_price > prod.discounted_price %}
+                        <span class="price-original">₹{{ prod.selling_price|floatformat:0 }}</span>
+                        {% endif %}
+                    </div>
+
+                    <button class="btn-card-add ajax-add-cart" data-prod-id="{{ prod.id }}">
+                        <i class="fa-solid fa-cart-plus"></i> Add to Cart
+                    </button>
+                </div>
             </div>
         </div>
+        {% endfor %}
     </div>
+
+    {% else %}
+    <!-- Empty Search State -->
+    <div class="bg-white rounded-4 border p-5 text-center my-4 shadow-xs" style="max-width: 580px; margin: auto;">
+        <i class="fa-solid fa-magnifying-glass fs-1 text-muted mb-3"></i>
+        <h4 class="fw-bold text-dark mb-2">No Dairy Products Matched</h4>
+        <p class="text-muted mb-4">
+            We couldn't find anything matching "<strong>{{ query }}</strong>". Try searching for <em>milk</em>, <em>ghee</em>, <em>paneer</em>, or <em>curd</em>.
+        </p>
+        <div class="d-flex justify-content-center flex-wrap gap-2 mb-4">
+            <a href="{% url 'search' %}?search=milk" class="badge bg-light text-dark border rounded-pill py-2 px-3 text-decoration-none">Milk</a>
+            <a href="{% url 'search' %}?search=ghee" class="badge bg-light text-dark border rounded-pill py-2 px-3 text-decoration-none">Ghee</a>
+            <a href="{% url 'search' %}?search=curd" class="badge bg-light text-dark border rounded-pill py-2 px-3 text-decoration-none">Curd</a>
+            <a href="{% url 'search' %}?search=paneer" class="badge bg-light text-dark border rounded-pill py-2 px-3 text-decoration-none">Paneer</a>
+            <a href="{% url 'search' %}?search=cheese" class="badge bg-light text-dark border rounded-pill py-2 px-3 text-decoration-none">Cheese</a>
+        </div>
+        <a href="{% url 'home' %}" class="btn-primary-dairy">Browse All Products</a>
+    </div>
+    {% endif %}
+
 </div>
 {% endblock main-content %}

@@ -1,38 +1,55 @@
 {% extends "app/base.html" %}
 {% load static %}
-{% block title %}Customer Registration{% endblock title %}
+{% block title %}Sign In | MilkMart Dairy{% endblock title %}
+
 {% block main-content %}
-<div class="container ">
-    <div class="row my-3 text-white">
-        <div class="col-sm-6 offset-sm-3 ">
-            <form action="" method="post" novalidate class="shadow p-5 bg-dark rounded-5 rounded-top-0">
-                <h3 class="text">Login</h3>
-                <hr>
-                {% csrf_token %}
-                {% for fm in form %}
-                    {{fm.label_tag}}{{fm}}<small class="text-danger ">
-                        {{fm.errors|striptags}}
-                    </small><br>
-                {% endfor %}
-
-                <small>
-                    <a href="{% url 'password_reset' %}">Forgot Password ?</a><br>
-                </small>
-                <input type="submit" class="btn btn-primary mt-4" value="Login">
-                <div class="text-center text-primary fw-bold">
-                    <small>
-                        New User ? <a href="{% url 'customerregistration' %}"
-                        class ="text-danger">Create an Account</a>
-                    </small>
-                </div>
-
-                {% if form.non_field_errors %}
-                    {% for error in form.non_field_errors %}
-                        <p class="alert alert-danger my-3">{{error}}</p>
-                    {% endfor %}
-                {% endif %}
-            </form>
+<div class="container my-5">
+    <div class="auth-card-modern">
+        <!-- Logo & Header -->
+        <div class="text-center mb-4">
+            <div class="brand-icon-wrap mx-auto mb-3" style="width: 56px; height: 56px; font-size: 1.6rem;">
+                <i class="fa-solid fa-bottle-water"></i>
+            </div>
+            <h3 class="fw-bold text-dark mb-1">Welcome Back</h3>
+            <p class="text-muted" style="font-size: 0.9rem;">Sign in to your MilkMart account</p>
         </div>
+
+        <form action="" method="post" novalidate>
+            {% csrf_token %}
+
+            {% for fm in form %}
+            <div class="mb-3">
+                <label class="form-label fw-bold text-dark" style="font-size: 0.88rem;">{{ fm.label }}</label>
+                {{ fm }}
+                {% if fm.errors %}
+                <small class="text-danger d-block mt-1">{{ fm.errors|striptags }}</small>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <a href="{% url 'password_reset' %}" class="text-muted text-decoration-none" style="font-size: 0.85rem;">
+                    Forgot Password?
+                </a>
+            </div>
+
+            {% if form.non_field_errors %}
+                {% for error in form.non_field_errors %}
+                    <div class="alert alert-danger py-2 px-3 rounded-3 mb-3" style="font-size: 0.88rem;">{{ error }}</div>
+                {% endfor %}
+            {% endif %}
+
+            <button type="submit" class="btn-primary-dairy w-100 py-3 fs-6">
+                <i class="fa-solid fa-arrow-right-to-bracket me-1"></i> Sign In
+            </button>
+
+            <div class="text-center mt-4 pt-3 border-top text-muted" style="font-size: 0.88rem;">
+                New to MilkMart? 
+                <a href="{% url 'customerregistration' %}" class="text-success fw-bold text-decoration-none">
+                    Create an Account
+                </a>
+            </div>
+        </form>
     </div>
 </div>
 {% endblock main-content %}

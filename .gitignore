@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual Environment
+.venv/
+env/
+venv/
+ENV/
+
+# Environment Variables
+.env
+.env.local
+
+# Django
+*.log
+local_settings.py
+db.sqlite3-journal
+
+# Staticfiles collected for production
+staticfiles/
+ecomm/staticfiles/
+
+# Large media & video files (Avoid GitHub 100MB limit)
+*.mp4
+*.mov
+*.avi
+*.wmv
+*.mkv
+Django Ecommerce Project.mp4
+
+# Temporary notes
+bypass razorpay.txt
+ReadMe.txt
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

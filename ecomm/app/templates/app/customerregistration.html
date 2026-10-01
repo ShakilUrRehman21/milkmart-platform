@@ -1,41 +1,49 @@
 {% extends "app/base.html" %}
 {% load static %}
-{% block title %}Customer Registration{% endblock title %}
+{% block title %}Create Account | MilkMart Dairy{% endblock title %}
+
 {% block main-content %}
-<div class="container text-white">
-    <div class="row my-3 ">
-        <div class="col-sm-6 offset-sm-3 ">
-            <form action="" method="post" novalidate class="shadow p-5 bg-dark  rounded-5 rounded-top-0">
-                <h3>Customer Registration</h3>
-                <hr>
-                {% csrf_token %} 
-                {% for fm in form %}
-                    {{fm.label_tag}} {{fm}} <small class="text-danger">{{fm.errors|striptags}}</small>
-                    <br>
-                {% endfor %}
-                <input type="submit" value="Submit" class="btn btn-primary"><br>
-                <div class="text-center text-primary fw-bold">
-                    <small>
-                        Existing User ? <a href="{% url 'login' %}"
-                        class="text-danger">Login Now</a>
-                    </small>
-                </div>
-
-                {% if form.non_field_errors %}
-                    {% for error in form.non_field_errors %}
-                        <p class="alert alert-danger my-3">{{error}}</p>
-                    {% endfor %}
-                {% endif %}
-
-                {% if messages %}
-                    {% for msg in messages %}
-                        <div class="alert alert-{{msg.tags}}" role="alert">
-                            {{msg}}
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            </form>
+<div class="container my-5">
+    <div class="auth-card-modern">
+        <!-- Logo & Header -->
+        <div class="text-center mb-4">
+            <div class="brand-icon-wrap mx-auto mb-3" style="width: 56px; height: 56px; font-size: 1.6rem;">
+                <i class="fa-solid fa-bottle-water"></i>
+            </div>
+            <h3 class="fw-bold text-dark mb-1">Join MilkMart</h3>
+            <p class="text-muted" style="font-size: 0.9rem;">Sign up for fresh, pure organic morning deliveries</p>
         </div>
+
+        <form action="" method="post" novalidate>
+            {% csrf_token %}
+
+            {% for fm in form %}
+            <div class="mb-3">
+                <label class="form-label fw-bold text-dark" style="font-size: 0.88rem;">{{ fm.label }}</label>
+                {{ fm }}
+                {% if fm.errors %}
+                <small class="text-danger d-block mt-1">{{ fm.errors|striptags }}</small>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            {% if form.non_field_errors %}
+                {% for error in form.non_field_errors %}
+                    <div class="alert alert-danger py-2 px-3 rounded-3 mb-3" style="font-size: 0.88rem;">{{ error }}</div>
+                {% endfor %}
+            {% endif %}
+
+            <button type="submit" class="btn-primary-dairy w-100 py-3 fs-6 mt-3">
+                <i class="fa-solid fa-user-plus me-1"></i> Register Account
+            </button>
+
+            <div class="text-center mt-4 pt-3 border-top text-muted" style="font-size: 0.88rem;">
+                Already have an account? 
+                <a href="{% url 'login' %}" class="text-success fw-bold text-decoration-none">
+                    Sign In Here
+                </a>
+            </div>
+        </form>
     </div>
-</div><br><br><br>
+</div>
 {% endblock main-content %}

@@ -1,40 +1,183 @@
 {% extends "app/base.html" %}
 {% load static %}
-{% block title %}Details{% endblock title %}
+{% block title %}{{ product.title }} | MilkMart Pure Dairy{% endblock title %}
 
 {% block main-content %}
-<div class="container">
-    <div class="row flex justify-content-between">
-        <div class="img2 col-lg-5 mt-5">
-            <img src="{{product.product_image.url}}" class="rounded-4 bg-white image col-xs-6 col-sm-12 col-lg-12 mt-3 text-sm-center w-80 h-75" alt="">
-        </div>
-        <div class="productdetail col-lg-5 text-white">
-            <br><br>
-            <h1 class="text-white" style="font-family: Georgia; font-size: 50px;">{{product.title}}</h1>
-            <h5>Rs.{{product.discounted_price}}/-</h5>
-            <small class="fw-light text-decoration-line-through text-muted fs-5"><del>{{product.selling_price}}</del></small>
-            <br><br><h4>Product Features</h4>
-            <ul class="fs-5" style="font-family: Rajdhani;">
-                <li>{{product.description}}</li>
-            </ul>
-            <div class="d-flex flex-column align-items-center">
-                <div>
-                    <form action="/add-to-cart" class="d-inline">
-                        <input type="hidden" name="prod_id" value={{product.id}} />
-                        <button type="submit" class="btn btn-primary shadow px-5 py-2">Add to Cart</button>
-                    </form>
-                    <a href="{% url 'showcart' %}" class="btn btn-warning shadow px-5 py-2 ms-4">Buy Now</a>
+<div class="container my-4">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb" style="font-size: 0.88rem;">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'category' product.category %}">{{ category_name }}</a></li>
+            <li class="breadcrumb-item active text-dark fw-bold" aria-current="page">{{ product.title }}</li>
+        </ol>
+    </nav>
+
+    <div class="row g-5">
+        <!-- Product Image Showcase -->
+        <div class="col-lg-6">
+            <div class="product-detail-img-box position-relative">
+                <!-- Floating Wishlist Button -->
+                <button class="wishlist-btn-pill {% if wishlist %}minus-wishlist active text-danger{% else %}plus-wishlist{% endif %}" pid="{{ product.id }}" style="top: 20px; right: 20px; width: 44px; height: 44px; font-size: 1.2rem;" title="Toggle Wishlist">
+                    <i class="fa-{% if wishlist %}solid{% else %}regular{% endif %} fa-heart"></i>
+                </button>
+
+                <img src="{{ product.product_image.url }}" alt="{{ product.title }}" class="img-fluid" id="mainProductImage">
+            </div>
+
+            <!-- Assurance Guarantee Pills -->
+            <div class="row g-3 mt-2">
+                <div class="col-4">
+                    <div class="p-3 bg-white rounded-3 border text-center">
+                        <i class="fa-solid fa-snowflake text-primary fs-4 mb-2"></i>
+                        <div class="fw-bold" style="font-size: 0.8rem;">4°C Cold Chain</div>
+                        <small class="text-muted" style="font-size: 0.72rem;">Always fresh</small>
+                    </div>
                 </div>
-                <div class="mt-4"> <!-- Positioned below and centered -->
-                    {% if wishlist %}
-                    <a pid={{product.id}} class="minus-wishlist btn btn-danger shadow px-5 py-2"><i class="fa fa-heart fa-lg"></i></a> 
-                    {% else %}
-                    <a pid={{product.id}} class="plus-wishlist btn btn-success shadow px-5 py-2"><i class="fa fa-heart fa-lg"></i></a>
-                    {% endif %}
+                <div class="col-4">
+                    <div class="p-3 bg-white rounded-3 border text-center">
+                        <i class="fa-solid fa-flask-vial text-success fs-4 mb-2"></i>
+                        <div class="fw-bold" style="font-size: 0.8rem;">Tested Daily</div>
+                        <small class="text-muted" style="font-size: 0.72rem;">Zero chemicals</small>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="p-3 bg-white rounded-3 border text-center">
+                        <i class="fa-solid fa-leaf text-success fs-4 mb-2"></i>
+                        <div class="fw-bold" style="font-size: 0.8rem;">100% Organic</div>
+                        <small class="text-muted" style="font-size: 0.72rem;">Ethical cows</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Specs & Buying Actions -->
+        <div class="col-lg-6">
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <span class="product-detail-badge">{{ category_name }}</span>
+                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1" style="font-size: 0.78rem;">
+                    <i class="fa-solid fa-circle-check me-1"></i> In Stock &bull; Dispatched Today
+                </span>
+            </div>
+
+            <h1 class="display-6 fw-bold text-dark mb-2">{{ product.title }}</h1>
+
+            <!-- Ratings -->
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <div class="text-warning" style="font-size: 0.9rem;">
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star-half-stroke"></i>
+                </div>
+                <span class="fw-bold text-dark" style="font-size: 0.9rem;">4.85 / 5.0</span>
+                <span class="text-muted" style="font-size: 0.85rem;">(142 customer reviews)</span>
+            </div>
+
+            <!-- Pricing Box -->
+            <div class="p-3 bg-white rounded-4 border d-flex align-items-baseline gap-3 mb-4 shadow-xs">
+                <div>
+                    <span class="text-muted d-block" style="font-size: 0.78rem;">Special Price</span>
+                    <span class="fs-2 fw-extrabold text-dark" style="font-family: 'Outfit', sans-serif;">₹{{ product.discounted_price|floatformat:0 }}</span>
+                </div>
+                {% if product.selling_price > product.discounted_price %}
+                <div>
+                    <span class="text-muted text-decoration-line-through fs-5">₹{{ product.selling_price|floatformat:0 }}</span>
+                    <span class="badge-discount ms-2">{{ product.discount_percentage }}% OFF</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Description -->
+            <div class="mb-4">
+                <h6 class="fw-bold text-dark mb-2">Product Description</h6>
+                <p class="text-body" style="font-size: 0.95rem; line-height: 1.7;">
+                    {{ product.description }}
+                </p>
+            </div>
+
+            {% if product.composition %}
+            <!-- Nutritional Composition / Features -->
+            <div class="detail-specs-box mb-4">
+                <h6 class="fw-bold text-dark mb-2">
+                    <i class="fa-solid fa-clipboard-list text-primary me-2"></i> Purity & Composition
+                </h6>
+                <p class="mb-0 text-muted" style="font-size: 0.9rem;">
+                    {{ product.composition }}
+                </p>
+            </div>
+            {% endif %}
+
+            <!-- Add to Cart Form -->
+            <div class="d-flex flex-wrap align-items-center gap-3 mb-4">
+                <form action="{% url 'add-to-cart' %}" method="get" class="d-inline-flex gap-3 flex-grow-1">
+                    <input type="hidden" name="prod_id" value="{{ product.id }}">
+                    <button type="submit" class="btn-primary-dairy flex-grow-1 py-3 fs-6">
+                        <i class="fa-solid fa-cart-shopping"></i> Add to Cart
+                    </button>
+                </form>
+
+                <a href="{% url 'add-to-cart' %}?prod_id={{ product.id }}" class="btn-secondary-dairy py-3 px-4 fs-6" style="text-decoration:none;">
+                    <i class="fa-solid fa-bolt"></i> Buy Now
+                </a>
+            </div>
+
+            <!-- Delivery Promise -->
+            <div class="p-3 bg-light rounded-4 border d-flex align-items-center gap-3">
+                <i class="fa-solid fa-truck-ramp-box text-primary fs-3"></i>
+                <div>
+                    <div class="fw-bold text-dark" style="font-size: 0.88rem;">Free Morning Doorstep Delivery</div>
+                    <small class="text-muted">Place your order now to enjoy this fresh batch tomorrow morning before 7:30 AM.</small>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Related Products Recommendations -->
+    {% if related_products %}
+    <div class="mt-5 pt-4 border-top">
+        <div class="d-flex justify-content-between align-items-end mb-4">
+            <div>
+                <span class="badge-dairy mb-1 d-inline-block">You May Also Like</span>
+                <h3 class="mb-0">More From {{ category_name }}</h3>
+            </div>
+            <a href="{% url 'category' product.category %}" class="btn btn-outline-dairy btn-sm">View All</a>
+        </div>
+
+        <div class="row g-3">
+            {% for rel in related_products %}
+            <div class="col-6 col-md-3">
+                <div class="product-card-modern">
+                    <button class="wishlist-btn-pill plus-wishlist" pid="{{ rel.id }}" title="Save to Wishlist">
+                        <i class="fa-regular fa-heart"></i>
+                    </button>
+                    <div class="product-img-box">
+                        <a href="{% url 'product-detail' rel.id %}">
+                            <img src="{{ rel.product_image.url }}" alt="{{ rel.title }}">
+                        </a>
+                    </div>
+                    <div class="product-info-box">
+                        <a href="{% url 'product-detail' rel.id %}" class="product-title-link">
+                            {{ rel.title }}
+                        </a>
+                        <div class="product-price-box">
+                            <span class="price-current">₹{{ rel.discounted_price|floatformat:0 }}</span>
+                            {% if rel.selling_price > rel.discounted_price %}
+                            <span class="price-original">₹{{ rel.selling_price|floatformat:0 }}</span>
+                            {% endif %}
+                        </div>
+                        <button class="btn-card-add ajax-add-cart" data-prod-id="{{ rel.id }}">
+                            <i class="fa-solid fa-cart-plus"></i> Add
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
 </div>
-<br><br><br>
 {% endblock main-content %}

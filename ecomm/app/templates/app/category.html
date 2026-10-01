@@ -1,37 +1,151 @@
 {% extends "app/base.html" %}
 {% load static %}
-{% block title %}Category{% endblock title %}
+{% block title %}{{ category_name }} | Farm-Fresh Dairy{% endblock title %}
 
 {% block main-content %}
-    <div class="container my-5">
-        <div class="row">
-            <div class="col-sm-3 text-white">
-                <div class="list-group">
-                    {% for val in title %}
-                        <a href="{% url 'category-title' val.title %}" class="list-group-item list-group-item-action" aria-current="true">
-                            {{val.title}}
-                        </a>
+<div class="container my-4">
+
+    <!-- Breadcrumb & Header -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb" style="font-size: 0.88rem;">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+            <li class="breadcrumb-item"><a href="#">Categories</a></li>
+            <li class="breadcrumb-item active text-dark fw-bold" aria-current="page">{{ category_name }}</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 pb-3 border-bottom">
+        <div>
+            <h2 class="mb-1">{{ category_name }} Collection</h2>
+            <p class="text-muted mb-0" style="font-size: 0.9rem;">
+                Showing {{ product.count }} authentic, farm-fresh option{{ product.count|pluralize }}
+            </p>
+        </div>
+
+        <!-- Sorting Selector -->
+        <div class="d-flex align-items-center gap-2">
+            <label for="sortSelector" class="text-muted text-nowrap fw-semibold" style="font-size: 0.88rem;">Sort By:</label>
+            <select id="sortSelector" class="form-select form-select-sm rounded-pill" style="min-width: 170px;" onchange="location = this.value;">
+                <option value="{% url 'category' current_category %}" {% if not sort_by %}selected{% endif %}>Default Order</option>
+                <option value="{% url 'category' current_category %}?sort=price_low" {% if sort_by == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+                <option value="{% url 'category' current_category %}?sort=price_high" {% if sort_by == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+                <option value="{% url 'category' current_category %}?sort=name" {% if sort_by == 'name' %}selected{% endif %}>Name (A-Z)</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Sidebar Navigation -->
+        <div class="col-lg-3 col-md-4">
+            <div class="bg-white rounded-4 border p-3 shadow-xs sticky-top" style="top: 85px;">
+                <h5 class="fw-bold mb-3 px-2 text-dark" style="font-size: 1rem;">
+                    <i class="fa-solid fa-layer-group text-primary me-2"></i> All Categories
+                </h5>
+                <div class="list-group list-group-flush mb-4">
+                    {% for cat in nav_categories %}
+                    <a href="{% url 'category' cat.code %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2 px-3 rounded-3 mb-1 border-0 {% if cat.code == current_category %}bg-success-subtle text-success fw-bold{% else %}text-secondary{% endif %}" style="font-size: 0.9rem;">
+                        <span>{{ cat.name }}</span>
+                        <i class="fa-solid fa-chevron-right text-muted" style="font-size: 0.75rem;"></i>
+                    </a>
                     {% endfor %}
                 </div>
-            </div>
-            <div class="col-sm-9">
-                <div class="row">
-                    {% for prod in product %}
-                        <div class="col-md-4 text-center mb-4">
-                            <a href="{% url 'product-detail' prod.id %}" class="btn bg-white">
-                                <div class="product-card">
-                                    <img src="{{prod.product_image.url}}" class="img-fluid" alt="Product Image">
-                                    <div class="fw-bold">{{prod.title}}</div>
-                                    <div class="fw-bold text-danger">
-                                        Rs.{{prod.discounted_price}}/-
-                                        <small class="fw-light text-decoration-line-through">{{prod.selling_price}}</small>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
+
+                {% if title %}
+                <h5 class="fw-bold mb-2 px-2 text-dark" style="font-size: 0.95rem;">
+                    <i class="fa-solid fa-filter text-primary me-2"></i> Specific Types
+                </h5>
+                <div class="d-flex flex-wrap gap-2 px-2">
+                    <a href="{% url 'category' current_category %}" class="badge rounded-pill {% if not selected_title %}bg-success text-white{% else %}bg-light text-dark border{% endif %} text-decoration-none py-2 px-3" style="font-size: 0.8rem;">
+                        All
+                    </a>
+                    {% for val in title %}
+                    <a href="{% url 'category-title' val.title %}" class="badge rounded-pill {% if selected_title == val.title %}bg-success text-white{% else %}bg-light text-dark border{% endif %} text-decoration-none py-2 px-3" style="font-size: 0.8rem;">
+                        {{ val.title }}
+                    </a>
                     {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Delivery Notice Box -->
+                <div class="mt-4 p-3 bg-light rounded-3 border">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <i class="fa-solid fa-clock text-primary"></i>
+                        <span class="fw-bold text-dark" style="font-size: 0.85rem;">Daily Morning Dispatch</span>
+                    </div>
+                    <small class="text-muted" style="font-size: 0.75rem;">
+                        Orders placed by 10 PM arrive tomorrow between 6:00 AM - 7:30 AM in chilled bags.
+                    </small>
                 </div>
             </div>
         </div>
+
+        <!-- Products Grid -->
+        <div class="col-lg-9 col-md-8">
+            {% if product %}
+            <div class="row g-3">
+                {% for prod in product %}
+                <div class="col-6 col-lg-4">
+                    <div class="product-card-modern">
+                        <!-- Wishlist Toggle -->
+                        <button class="wishlist-btn-pill plus-wishlist" pid="{{ prod.id }}" title="Save to Wishlist">
+                            <i class="fa-regular fa-heart"></i>
+                        </button>
+
+                        <!-- Product Thumbnail Box -->
+                        <div class="product-img-box">
+                            <a href="{% url 'product-detail' prod.id %}">
+                                <img src="{{ prod.product_image.url }}" alt="{{ prod.title }}">
+                            </a>
+                        </div>
+
+                        <!-- Info & Price -->
+                        <div class="product-info-box">
+                            <div class="product-meta-row">
+                                <span class="badge-dairy">{{ prod.get_category_display }}</span>
+                                {% if prod.discount_percentage > 0 %}
+                                <span class="badge-discount">{{ prod.discount_percentage }}% OFF</span>
+                                {% endif %}
+                            </div>
+
+                            <a href="{% url 'product-detail' prod.id %}" class="product-title-link">
+                                {{ prod.title }}
+                            </a>
+
+                            <div class="product-rating">
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star-half-stroke"></i>
+                                <span>(4.8)</span>
+                            </div>
+
+                            <div class="product-price-box">
+                                <span class="price-current">₹{{ prod.discounted_price|floatformat:0 }}</span>
+                                {% if prod.selling_price > prod.discounted_price %}
+                                <span class="price-original">₹{{ prod.selling_price|floatformat:0 }}</span>
+                                {% endif %}
+                            </div>
+
+                            <button class="btn-card-add ajax-add-cart" data-prod-id="{{ prod.id }}">
+                                <i class="fa-solid fa-cart-plus"></i> Add to Cart
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <!-- Empty Category State -->
+            <div class="bg-white rounded-4 border p-5 text-center shadow-xs">
+                <i class="fa-solid fa-box-open fs-1 text-muted mb-3"></i>
+                <h4 class="fw-bold text-dark">No Products Found</h4>
+                <p class="text-muted">We couldn't find items in this specific selection today.</p>
+                <a href="{% url 'home' %}" class="btn-primary-dairy mt-2">Back to Home</a>
+            </div>
+            {% endif %}
+        </div>
     </div>
+
+</div>
 {% endblock main-content %}
